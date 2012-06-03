@@ -96,13 +96,17 @@
     (time (setq big-hash (make-big-hash n klass)))
     (format t "Doing ~D lookups.~%" n)
     (time (lookup-lots big-hash n)))
-  (let ((num-hashes 1000)
-        (size 100)
-        (hashes))
-    (format t "Building ~D hashes with ~D entries each.~%" num-hashes size)
-    (time
-      (setq hashes
-            (loop
-              for x upto (1- num-hashes)
-              collecting (make-big-hash size klass))))))
+  (let ((hashes))
+    (dolist (spec '((1000 100) (10000 10)))
+      (destructuring-bind (num-hashes size) spec
+        (format t "Building ~D hashes with ~D entries each.~%" num-hashes size)
+        (time
+          (setq hashes
+                (loop
+                  for x upto (1- num-hashes)
+                  collecting (make-big-hash size klass))))
+        (format t "Doing ~D lookups on ~D hashes of size ~D.~%" size num-hashes size)
+        (time (dolist (hash hashes)
+                (lookup-lots hash size)))
+        ))))
 
